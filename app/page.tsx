@@ -1,4 +1,3 @@
-
 'use client';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -11,7 +10,6 @@ type Movie = {
   release_date: string;
 };
 
-// التصنيفات العادية بتاعتك
 const genres = [
   { id: 28, name: 'أكشن' },
   { id: 35, name: 'كوميدي' },
@@ -21,7 +19,6 @@ const genres = [
   { id: 878, name: 'خيال علمي' },
 ];
 
-// الأقسام الرئيسية زي عرب سيد
 const mainCategories = [
   { name: 'أفلام أجنبي', type: 'trending' },
   { name: 'أفلام عربي', type: 'arabic' },
@@ -37,21 +34,27 @@ export default function HomePage() {
   const [selectedGenre, setSelectedGenre] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('trending');
   const [loading, setLoading] = useState(true);
+  const [showSplash, setShowSplash] = useState(true); // للـ Splash Screen
 
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+
+  // Splash Screen يختفي بعد ثانيتين
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   async function fetchMovies() {
     setLoading(true);
     let url = '';
 
     if (searchTerm) {
-      // 1. لو بيبحث
       url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(searchTerm)}&language=ar`;
     } else if (selectedGenre) {
-      // 2. لو اختار تصنيف
       url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${selectedGenre}&language=ar&sort_by=popularity.desc`;
     } else {
-      // 3. الأقسام الرئيسية
       switch (selectedCategory) {
         case 'arabic':
           url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_original_language=ar&region=EG&sort_by=popularity.desc&language=ar`;
@@ -68,7 +71,7 @@ export default function HomePage() {
         case 'tv':
           url = `https://api.themoviedb.org/3/trending/tv/week?api_key=${apiKey}&language=ar`;
           break;
-        default: // trending
+        default:
           url = `https://api.themoviedb.org/3/trending/movie/week?api_key=${apiKey}&language=ar`;
       }
     }
@@ -108,13 +111,31 @@ export default function HomePage() {
     setSearchTerm(e.target.value);
   }
 
+  // Splash Screen
+  if (showSplash) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+        <div className="text-center animate-pulse">
+          <h1 className="text-5xl md:text-8xl font-black tracking-[0.05em] text-[#E50914] transform -skew-x-12 drop-shadow-[0_0_30px_rgba(229,9,20,0.8)]"
+              style={{ fontFamily: 'Impact, Arial Black, sans-serif' }}>
+            GTM MOVIES
+          </h1>
+          <p className="text-gray-300 text-xl mt-4 tracking-[0.3em] animate-fade-in">
+            WELCOME TO GTM MOVIES WORLD
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#0D0D0D] text-white p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* اللوجو - ستايل Netflix */}
         <div className="text-center mb-8">
-          <h1 className="text-6xl font-black tracking-tight mb-2 bg-gradient-to-b from-red-600 to-red-800 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-            GTM Movies
+          <h1 className="text-5xl md:text-7xl font-black tracking-[0.05em] mb-2 text-[#E50914] transform -skew-x-12 drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]"
+              style={{ fontFamily: 'Impact, Arial Black, sans-serif' }}>
+            GTM MOVIES
           </h1>
           <p className="text-gray-400 text-sm tracking-wider">أسرع موقع أفلام في مصر</p>
         </div>
@@ -130,7 +151,7 @@ export default function HomePage() {
           />
         </div>
 
-        {/* الأقسام الرئيسية زي عرب سيد */}
+        {/* الأقسام الرئيسية */}
         <div className="flex flex-wrap gap-3 mb-6 justify-center">
           {mainCategories.map((cat) => (
             <button
@@ -138,7 +159,7 @@ export default function HomePage() {
               onClick={() => handleCategoryClick(cat.type)}
               className={`px-6 py-2 rounded-full font-bold transition-all border ${
                 selectedCategory === cat.type
-                ? 'bg-yellow-500 text-black border-yellow-500'
+               ? 'bg-yellow-500 text-black border-yellow-500'
                   : 'bg-transparent text-white border-gray-700 hover:border-yellow-500 hover:bg-yellow-500/10'
               }`}
             >
@@ -155,7 +176,7 @@ export default function HomePage() {
               onClick={() => handleGenreClick(genre.id)}
               className={`px-4 py-1 rounded-full text-sm font-bold transition-colors ${
                 selectedGenre === genre.id
-                ? 'bg-yellow-400 text-gray-900'
+               ? 'bg-yellow-400 text-gray-900'
                   : 'bg-gray-800 text-white hover:bg-gray-700'
               }`}
             >
@@ -177,7 +198,7 @@ export default function HomePage() {
                   <img
                     src={
                       movie.poster_path
-                      ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
                         : 'https://via.placeholder.com/500x750?text=No+Image'
                     }
                     alt={movie.title}
