@@ -14,11 +14,10 @@ type Movie = {
 export default function HomePage() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [trending, setTrending] = useState<Movie[]>([]);
-  const [lang, setLang] = useState('ar'); // ar أو en
+  const [lang, setLang] = useState('ar');
 
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
-  // نخزن اللغة ونقراها من المتصفح
   useEffect(() => {
     const savedLang = localStorage.getItem('lang') || 'ar';
     setLang(savedLang);
@@ -32,10 +31,9 @@ export default function HomePage() {
     localStorage.setItem('lang', newLang);
     document.documentElement.lang = newLang;
     document.documentElement.dir = newLang === 'ar'? 'rtl' : 'ltr';
-    window.location.reload(); // عشان يعيد تحميل البيانات باللغة الجديدة
+    window.location.reload();
   };
 
-  // النصوص باللغتين
   const t = {
     ar: {
       login: 'دخول',
@@ -58,31 +56,33 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchData() {
       const apiLang = lang === 'ar'? 'ar' : 'en';
-      const moviesRes = await fetch(
-        `https://api.themoviedb.org/3/trending/movie/week?api_key=${apiKey}&language=${apiLang}`
-      );
-      const moviesData = await moviesRes.json();
-      setMovies(moviesData.results?.slice(0, 18) || []);
+      try {
+        const moviesRes = await fetch(
+          `https://api.themoviedb.org/3/trending/movie/week?api_key=${apiKey}&language=${apiLang}`
+        );
+        const moviesData = await moviesRes.json();
+        setMovies(moviesData.results?.slice(0, 18) || []);
 
-      const trendingRes = await fetch(
-        `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${apiLang}&region=EG`
-      );
-      const trendingData = await trendingRes.json();
-      setTrending(trendingData.results?.slice(0, 10) || []);
+        const trendingRes = await fetch(
+          `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${apiLang}&region=EG`
+        );
+        const trendingData = await trendingRes.json();
+        setTrending(trendingData.results?.slice(0, 10) || []);
+      } catch (error) {
+        console.error('Error:', error);
+      }
     }
     fetchData();
-  }, [lang]);
+  }, [lang, apiKey]);
 
   return (
     <main className="min-h-screen bg-black text-white">
-      {/* الهيدر الجديد */}
       <header className="absolute top-0 w-full z-40 px-4 md:px-12 py-4 flex justify-between items-center">
         <h1 className="text-2xl md:text-4xl font-black tracking-[0.05em] text-[#E50914] transform -skew-x-12"
             style={{ fontFamily: 'Impact, Arial Black, sans-serif' }}>
           GTM MOVIES
         </h1>
         <div className="flex gap-3">
-          {/* زرار اللغة */}
           <button
             onClick={toggleLang}
             className="px-4 py-1 border border-gray-500 rounded text-sm hover:border-white font-bold"
@@ -95,14 +95,13 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* الهيرو */}
       <section className="relative h-screen flex items-center justify-center text-center overflow-hidden">
         <div className="absolute inset-0 grid grid-cols-3 md:grid-cols-6 gap-1 opacity-40">
           {movies.map((movie, i) => (
             <img
               key={i}
               src={movie.poster_path
-               ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+              ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
                 : 'https://via.placeholder.com/300x450'}
               alt=""
               className="w-full h-full object-cover"
@@ -144,7 +143,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* الأكثر شهرة */}
       <section className="bg-black px-4 md:px-12 pb-12 -mt-1">
         <h3 className="text-2xl font-bold mb-6">{t.trending}</h3>
         <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
@@ -157,7 +155,7 @@ export default function HomePage() {
                 </span>
                 <img
                   src={movie.poster_path
-                   ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+                  ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
                     : 'https://via.placeholder.com/300x450'}
                   alt={movie.title}
                   className="w-32 md:w-44 rounded relative z-10 hover:scale-105 transition-transform"
