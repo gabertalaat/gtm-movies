@@ -31,14 +31,12 @@ export default function MoviePage({ params }: { params: { id: string } }) {
   useEffect(() => {
     async function fetchMovie() {
       try {
-        // تفاصيل الفيلم
         const movieRes = await fetch(
           `https://api.themoviedb.org/3/movie/${params.id}?api_key=${apiKey}&language=ar`
         );
         const movieData = await movieRes.json();
         setMovie(movieData);
 
-        // طاقم العمل
         const creditsRes = await fetch(
           `https://api.themoviedb.org/3/movie/${params.id}/credits?api_key=${apiKey}&language=ar`
         );
@@ -69,83 +67,83 @@ export default function MoviePage({ params }: { params: { id: string } }) {
     );
   }
 
+  const backdropUrl = movie.backdrop_path
+   ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
+    : movie.poster_path
+   ? `https://image.tmdb.org/t/p/original${movie.poster_path}`
+    : null;
+
   return (
     <main className="min-h-screen bg-black text-white">
-      {/* الخلفية الكبيرة */}
-      <div className="relative h-[70vh]">
-        <img
-          src={
-            movie.backdrop_path
-             ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
-              : 'https://via.placeholder.com/1920x1080'
-          }
-          alt={movie.title}
-          className="w-full h-full object-cover"
-        />
-        {/* Gradient من تحت */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-
-        {/* الهيدر */}
-        <header className="absolute top-0 w-full z-40 px-4 md:px-12 py-4">
-          <Link href="/browse">
-            <h1 className="text-2xl md:text-4xl font-black tracking-[0.05em] text-[#E50914] transform -skew-x-12 inline-block"
-                style={{ fontFamily: 'Impact, Arial Black, sans-serif' }}>
-              GTM MOVIES
-            </h1>
-          </Link>
-        </header>
-
-        {/* معلومات الفيلم فوق الخلفية */}
-        <div className="absolute bottom-0 left-0 right-0 px-4 md:px-12 pb-8">
-          <h1 className="text-4xl md:text-7xl font-black mb-4 drop-shadow-2xl">
-            {movie.title}
-          </h1>
-
-          <div className="flex items-center gap-4 mb-6 text-lg">
-            <span className="text-green-500 font-bold">
-              ⭐ {movie.vote_average?.toFixed(1)}
-            </span>
-            <span>{movie.release_date?.split('-')[0]}</span>
-            <span>{movie.runtime} دقيقة</span>
-            <span className="px-2 py-1 border border-gray-400 text-xs">HD</span>
-          </div>
-
-          {/* زر التشغيل */}
-          <button className="px-8 py-3 bg-white text-black text-xl font-bold rounded hover:bg-gray-300 transition-all flex items-center gap-3 mb-8">
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-            </svg>
-            تشغيل
-          </button>
-
-          <p className="max-w-2xl text-lg text-gray-200 leading-relaxed">
-            {movie.overview}
-          </p>
+      {/* الخلفية - لو مفيش backdrop هيستخدم البوستر */}
+      {backdropUrl && (
+        <div className="absolute inset-0 h-[70vh]">
+          <img
+            src={backdropUrl}
+            alt={movie.title}
+            className="w-full h-full object-cover opacity-40"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30"></div>
         </div>
-      </div>
+      )}
 
-      {/* المحتوى تحت */}
-      <div className="px-4 md:px-12 py-8 -mt-20 relative z-10">
+      {/* الهيدر */}
+      <header className="relative z-40 px-4 md:px-12 py-4">
+        <Link href="/browse">
+          <h1 className="text-2xl md:text-4xl font-black tracking-[0.05em] text-[#E50914] transform -skew-x-12 inline-block"
+              style={{ fontFamily: 'Impact, Arial Black, sans-serif' }}>
+            GTM MOVIES
+          </h1>
+        </Link>
+      </header>
+
+      {/* المحتوى */}
+      <div className="relative z-10 px-4 md:px-12 py-8">
         <div className="flex flex-col md:flex-row gap-8">
           {/* البوستر */}
           <img
             src={
               movie.poster_path
-               ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                : 'https://via.placeholder.com/500x750'
+              ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                : 'https://via.placeholder.com/500x750?text=No+Image'
             }
             alt={movie.title}
-            className="w-48 md:w-64 rounded-lg shadow-2xl"
+            className="w-48 md:w-64 rounded-lg shadow-2xl mx-auto md:mx-0"
           />
 
           {/* التفاصيل */}
           <div className="flex-1">
-            <h2 className="text-2xl font-bold mb-4 text-gray-400">القصة</h2>
-            <p className="text-gray-300 leading-loose mb-8">
-              {movie.overview}
+            {/* اسم الفيلم */}
+            <h1 className="text-4xl md:text-6xl font-black mb-4 drop-shadow-2xl">
+              {movie.title}
+            </h1>
+
+            {/* المعلومات */}
+            <div className="flex flex-wrap items-center gap-4 mb-6 text-lg">
+              <span className="text-green-500 font-bold">
+                ⭐ {movie.vote_average?.toFixed(1)}
+              </span>
+              <span>{movie.release_date?.split('-')[0]}</span>
+              <span>{movie.runtime} دقيقة</span>
+              <span className="px-2 py-1 border-gray-400 text-xs rounded">HD</span>
+            </div>
+
+            {/* زر التشغيل */}
+            <button className="px-8 py-3 bg-white text-black text-xl font-bold rounded hover:bg-gray-300 transition-all flex items-center gap-3 mb-8">
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+              </svg>
+              تشغيل
+            </button>
+
+            {/* القصة */}
+            <h2 className="text-2xl font-bold mb-3 text-gray-400">القصة</h2>
+            <p className="text-gray-300 leading-loose mb-8 max-w-3xl">
+              {movie.overview || 'لا توجد قصة متاحة لهذا الفيلم'}
             </p>
 
-            <h2 className="text-2xl font-bold mb-4 text-gray-400">التصنيف</h2>
+            {/* التصنيف */}
+            <h2 className="text-2xl font-bold mb-3 text-gray-400">التصنيف</h2>
             <div className="flex flex-wrap gap-2 mb-8">
               {movie.genres?.map((genre) => (
                 <span key={genre.id} className="px-4 py-1 bg-gray-800 rounded-full text-sm">
@@ -154,6 +152,7 @@ export default function MoviePage({ params }: { params: { id: string } }) {
               ))}
             </div>
 
+            {/* طاقم العمل */}
             <h2 className="text-2xl font-bold mb-4 text-gray-400">طاقم العمل</h2>
             <div className="flex gap-4 overflow-x-auto pb-4">
               {cast.map((actor) => (
@@ -161,7 +160,7 @@ export default function MoviePage({ params }: { params: { id: string } }) {
                   <img
                     src={
                       actor.profile_path
-                       ? `https://image.tmdb.org/t/p/w200${actor.profile_path}`
+                      ? `https://image.tmdb.org/t/p/w200${actor.profile_path}`
                         : 'https://via.placeholder.com/200x300?text=No+Image'
                     }
                     alt={actor.name}
