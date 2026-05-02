@@ -14,64 +14,89 @@ type Movie = {
 export default function HomePage() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [trending, setTrending] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [lang, setLang] = useState('ar'); // ar أو en
 
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
+  // نخزن اللغة ونقراها من المتصفح
+  useEffect(() => {
+    const savedLang = localStorage.getItem('lang') || 'ar';
+    setLang(savedLang);
+    document.documentElement.lang = savedLang;
+    document.documentElement.dir = savedLang === 'ar'? 'rtl' : 'ltr';
+  }, []);
+
+  const toggleLang = () => {
+    const newLang = lang === 'ar'? 'en' : 'ar';
+    setLang(newLang);
+    localStorage.setItem('lang', newLang);
+    document.documentElement.lang = newLang;
+    document.documentElement.dir = newLang === 'ar'? 'rtl' : 'ltr';
+    window.location.reload(); // عشان يعيد تحميل البيانات باللغة الجديدة
+  };
+
+  // النصوص باللغتين
+  const t = {
+    ar: {
+      login: 'دخول',
+      hero1: 'أفلام ومسلسلات وبرامج',
+      hero2: 'لا حصر لها والمزيد',
+      subtext: 'شاهد في أي وقت. مجاني 100%',
+      browse: 'ابدأ التصفح',
+      trending: 'الأكثر شهرة الآن'
+    },
+    en: {
+      login: 'Sign In',
+      hero1: 'Unlimited movies, TV',
+      hero2: 'shows, and more',
+      subtext: 'Watch anywhere. Free 100%',
+      browse: 'Get Started',
+      trending: 'Trending Now'
+    }
+  }[lang];
+
   useEffect(() => {
     async function fetchData() {
-      try {
-        // خلفية البوسترات
-        const moviesRes = await fetch(
-          `https://api.themoviedb.org/3/trending/movie/week?api_key=${apiKey}&language=ar`
-        );
-        const moviesData = await moviesRes.json();
-        setMovies(moviesData.results?.slice(0, 18) || []);
+      const apiLang = lang === 'ar'? 'ar' : 'en';
+      const moviesRes = await fetch(
+        `https://api.themoviedb.org/3/trending/movie/week?api_key=${apiKey}&language=${apiLang}`
+      );
+      const moviesData = await moviesRes.json();
+      setMovies(moviesData.results?.slice(0, 18) || []);
 
-        // الأكثر شهرة
-        const trendingRes = await fetch(
-          `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=ar&region=EG`
-        );
-        const trendingData = await trendingRes.json();
-        setTrending(trendingData.results?.slice(0, 10) || []);
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        setLoading(false);
-      }
+      const trendingRes = await fetch(
+        `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${apiLang}&region=EG`
+      );
+      const trendingData = await trendingRes.json();
+      setTrending(trendingData.results?.slice(0, 10) || []);
     }
     fetchData();
-  }, [apiKey]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-2xl text-gray-400">جاري التحميل...</div>
-      </div>
-    );
-  }
+  }, [lang]);
 
   return (
     <main className="min-h-screen bg-black text-white">
-      {/* الهيدر */}
+      {/* الهيدر الجديد */}
       <header className="absolute top-0 w-full z-40 px-4 md:px-12 py-4 flex justify-between items-center">
         <h1 className="text-2xl md:text-4xl font-black tracking-[0.05em] text-[#E50914] transform -skew-x-12"
             style={{ fontFamily: 'Impact, Arial Black, sans-serif' }}>
           GTM MOVIES
         </h1>
         <div className="flex gap-3">
-          <button className="px-4 py-1 border border-gray-500 rounded text-sm hover:border-white">
-            العربية
+          {/* زرار اللغة */}
+          <button
+            onClick={toggleLang}
+            className="px-4 py-1 border border-gray-500 rounded text-sm hover:border-white font-bold"
+          >
+            {lang === 'ar'? 'EN' : 'AR'}
           </button>
           <button className="px-4 py-1 bg-[#E50914] rounded text-sm font-bold hover:bg-red-700">
-            دخول
+            {t.login}
           </button>
         </div>
       </header>
 
-      {/* الهيرو - خلفية البوسترات */}
+      {/* الهيرو */}
       <section className="relative h-screen flex items-center justify-center text-center overflow-hidden">
-        {/* خلفية البوسترات */}
         <div className="absolute inset-0 grid grid-cols-3 md:grid-cols-6 gap-1 opacity-40">
           {movies.map((movie, i) => (
             <img
@@ -85,37 +110,43 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* طبقة سودا فوق البوسترات */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/60"></div>
 
-        {/* المحتوى */}
         <div className="relative z-10 px-4 max-w-3xl">
           <h2 className="text-4xl md:text-6xl font-black mb-4 leading-tight">
-            أفلام ومسلسلات وبرامج
+            {t.hero1}
             <br />
-            لا حصر لها والمزيد
+            {t.hero2}
           </h2>
           <p className="text-lg md:text-xl mb-8 text-gray-200">
-            شاهد في أي وقت. مجاني 100%
+            {t.subtext}
           </p>
           <Link href="/browse">
             <button className="px-8 py-4 bg-[#E50914] text-xl font-bold rounded hover:bg-red-700 transition-all flex items-center gap-2 mx-auto">
-              ابدأ التصفح
-              <span className="text-2xl">‹</span>
+              {lang === 'ar'? (
+                <>
+                  <span className="text-2xl">›</span>
+                  {t.browse}
+                </>
+              ) : (
+                <>
+                  {t.browse}
+                  <span className="text-2xl">›</span>
+                </>
+              )}
             </button>
           </Link>
         </div>
 
-        {/* خط منحني تحت */}
         <div className="absolute bottom-0 w-full h-20">
           <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
-          <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-transparent via-[#E50914] to-transparent"></div>
+          <div className="absolute top-0 w-full h-2 bg-gradient-to-r from-transparent via-[#E50914] to-transparent shadow-[0_0_20px_#E50914]"></div>
         </div>
       </section>
 
-      {/* الأكثر شهرة الآن */}
+      {/* الأكثر شهرة */}
       <section className="bg-black px-4 md:px-12 pb-12 -mt-1">
-        <h3 className="text-2xl font-bold mb-6">الأكثر شهرة الآن</h3>
+        <h3 className="text-2xl font-bold mb-6">{t.trending}</h3>
         <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
           {trending.map((movie, index) => (
             <Link href={`/movie/${movie.id}`} key={movie.id} className="flex-shrink-0">
