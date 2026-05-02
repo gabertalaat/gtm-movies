@@ -112,9 +112,10 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
                 <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center">
                   <div className="bg-red-600 rounded-full p-5 group-hover:scale-110 transition-transform">
                     <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M6.3 2.841A1.5 0 004 4.11V15.89a1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                      <path d="M6.3 2.841A1.5 0 004 4.11V15.89a1.5 0 002.3 1.269l9.344-5.89a1.5 0 000-2.538L6.3 2.84z" />
                     </svg>
                   </div>
+                </div>
                 <div className="absolute bottom-4 left-4 bg-black/80 px-3 py-1 rounded text-sm">
                   شاهده على YouTube
                 </div>
