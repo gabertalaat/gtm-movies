@@ -68,29 +68,29 @@ export default function MoviePage({ params }: { params: { id: string } }) {
   }
 
   const backdropUrl = movie.backdrop_path
-   ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
+  ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
     : movie.poster_path
-   ? `https://image.tmdb.org/t/p/original${movie.poster_path}`
+  ? `https://image.tmdb.org/t/p/original${movie.poster_path}`
     : null;
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      {/* الخلفية - لو مفيش backdrop هيستخدم البوستر */}
+    <main className="min-h-screen bg-black text-white relative">
+      {/* الخلفية */}
       {backdropUrl && (
-        <div className="absolute inset-0 h-[70vh]">
+        <div className="absolute inset-0 h-[70vh] w-full">
           <img
             src={backdropUrl}
             alt={movie.title}
-            className="w-full h-full object-cover opacity-40"
+            className="w-full h-full object-cover opacity-30"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
         </div>
       )}
 
       {/* الهيدر */}
       <header className="relative z-40 px-4 md:px-12 py-4">
         <Link href="/browse">
-          <h1 className="text-2xl md:text-4xl font-black tracking-[0.05em] text-[#E50914] transform -skew-x-12 inline-block"
+          <h1 className="text-2xl md:text-4xl font-black tracking-[0.05em] text-[#E50914] transform -skew-x-12 inline-block cursor-pointer"
               style={{ fontFamily: 'Impact, Arial Black, sans-serif' }}>
             GTM MOVIES
           </h1>
@@ -98,13 +98,13 @@ export default function MoviePage({ params }: { params: { id: string } }) {
       </header>
 
       {/* المحتوى */}
-      <div className="relative z-10 px-4 md:px-12 py-8">
+      <div className="relative z-10 px-4 md:px-12 py-8 pt-4">
         <div className="flex flex-col md:flex-row gap-8">
           {/* البوستر */}
           <img
             src={
               movie.poster_path
-              ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+             ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
                 : 'https://via.placeholder.com/500x750?text=No+Image'
             }
             alt={movie.title}
@@ -124,8 +124,8 @@ export default function MoviePage({ params }: { params: { id: string } }) {
                 ⭐ {movie.vote_average?.toFixed(1)}
               </span>
               <span>{movie.release_date?.split('-')[0]}</span>
-              <span>{movie.runtime} دقيقة</span>
-              <span className="px-2 py-1 border-gray-400 text-xs rounded">HD</span>
+              {movie.runtime && <span>{movie.runtime} دقيقة</span>}
+              <span className="px-2 py-1 border border-gray-400 text-xs rounded">HD</span>
             </div>
 
             {/* زر التشغيل */}
@@ -143,34 +143,42 @@ export default function MoviePage({ params }: { params: { id: string } }) {
             </p>
 
             {/* التصنيف */}
-            <h2 className="text-2xl font-bold mb-3 text-gray-400">التصنيف</h2>
-            <div className="flex flex-wrap gap-2 mb-8">
-              {movie.genres?.map((genre) => (
-                <span key={genre.id} className="px-4 py-1 bg-gray-800 rounded-full text-sm">
-                  {genre.name}
-                </span>
-              ))}
-            </div>
+            {movie.genres && movie.genres.length > 0 && (
+              <>
+                <h2 className="text-2xl font-bold mb-3 text-gray-400">التصنيف</h2>
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {movie.genres.map((genre) => (
+                    <span key={genre.id} className="px-4 py-1 bg-gray-800 rounded-full text-sm">
+                      {genre.name}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
 
             {/* طاقم العمل */}
-            <h2 className="text-2xl font-bold mb-4 text-gray-400">طاقم العمل</h2>
-            <div className="flex gap-4 overflow-x-auto pb-4">
-              {cast.map((actor) => (
-                <div key={actor.id} className="text-center flex-shrink-0 w-24">
-                  <img
-                    src={
-                      actor.profile_path
-                      ? `https://image.tmdb.org/t/p/w200${actor.profile_path}`
-                        : 'https://via.placeholder.com/200x300?text=No+Image'
-                    }
-                    alt={actor.name}
-                    className="w-24 h-24 rounded-full object-cover mb-2"
-                  />
-                  <p className="text-xs font-bold truncate">{actor.name}</p>
-                  <p className="text-xs text-gray-500 truncate">{actor.character}</p>
+            {cast.length > 0 && (
+              <>
+                <h2 className="text-2xl font-bold mb-4 text-gray-400">طاقم العمل</h2>
+                <div className="flex gap-4 overflow-x-auto pb-4">
+                  {cast.map((actor) => (
+                    <div key={actor.id} className="text-center flex-shrink-0 w-24">
+                      <img
+                        src={
+                          actor.profile_path
+                         ? `https://image.tmdb.org/t/p/w200${actor.profile_path}`
+                            : 'https://via.placeholder.com/200x300?text=No+Image'
+                        }
+                        alt={actor.name}
+                        className="w-24 h-24 rounded-full object-cover mb-2"
+                      />
+                      <p className="text-xs font-bold truncate">{actor.name}</p>
+                      <p className="text-xs text-gray-500 truncate">{actor.character}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
           </div>
         </div>
       </div>
