@@ -5,7 +5,7 @@ import './globals.css';
 const cairo = Cairo({ subsets: ['arabic', 'latin'] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://gtm-movies.vercel.app'), // غيرها لو عندك دومين
+  metadataBase: new URL('https://gtm-movies.vercel.app'),
   title: {
     default: 'GTM MOVIES | gtm movies - مشاهدة افلام اون لاين HD',
     template: '%s | GTM MOVIES'
@@ -48,7 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ar" dir="rtl">
       <head>
-        <meta name="google-site-verification" content="هتحط الكود هنا من Search Console" />
+        <meta name="google-site-verification" content="cE1A8JUQedszuKdgFawApx_OfCJlOR_k4-7scBSdCrg" />
       </head>
       <body className={cairo.className}>{children}</body>
     </html>
