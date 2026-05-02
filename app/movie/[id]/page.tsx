@@ -68,25 +68,13 @@ export default function MoviePage({ params }: { params: { id: string } }) {
   }
 
   const backdropUrl = movie.backdrop_path
-  ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
+ ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
     : movie.poster_path
-  ? `https://image.tmdb.org/t/p/original${movie.poster_path}`
+ ? `https://image.tmdb.org/t/p/original${movie.poster_path}`
     : null;
 
   return (
-    <main className="min-h-screen bg-black text-white relative">
-      {/* الخلفية */}
-      {backdropUrl && (
-        <div className="absolute inset-0 h-[70vh] w-full">
-          <img
-            src={backdropUrl}
-            alt={movie.title}
-            className="w-full h-full object-cover opacity-30"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
-        </div>
-      )}
-
+    <main className="min-h-screen bg-black text-white">
       {/* الهيدر */}
       <header className="relative z-40 px-4 md:px-12 py-4">
         <Link href="/browse">
@@ -97,8 +85,20 @@ export default function MoviePage({ params }: { params: { id: string } }) {
         </Link>
       </header>
 
+      {/* الخلفية */}
+      {backdropUrl && (
+        <div className="fixed inset-0 -z-10">
+          <img
+            src={backdropUrl}
+            alt={movie.title}
+            className="w-full h-full object-cover opacity-20"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black"></div>
+        </div>
+      )}
+
       {/* المحتوى */}
-      <div className="relative z-10 px-4 md:px-12 py-8 pt-4">
+      <div className="relative z-10 px-4 md:px-12 py-8">
         <div className="flex flex-col md:flex-row gap-8">
           {/* البوستر */}
           <img
@@ -114,7 +114,7 @@ export default function MoviePage({ params }: { params: { id: string } }) {
           {/* التفاصيل */}
           <div className="flex-1">
             {/* اسم الفيلم */}
-            <h1 className="text-4xl md:text-6xl font-black mb-4 drop-shadow-2xl">
+            <h1 className="text-4xl md:text-6xl font-black mb-4">
               {movie.title}
             </h1>
 
@@ -123,7 +123,7 @@ export default function MoviePage({ params }: { params: { id: string } }) {
               <span className="text-green-500 font-bold">
                 ⭐ {movie.vote_average?.toFixed(1)}
               </span>
-              <span>{movie.release_date?.split('-')[0]}</span>
+              {movie.release_date && <span>{movie.release_date.split('-')[0]}</span>}
               {movie.runtime && <span>{movie.runtime} دقيقة</span>}
               <span className="px-2 py-1 border border-gray-400 text-xs rounded">HD</span>
             </div>
@@ -131,7 +131,7 @@ export default function MoviePage({ params }: { params: { id: string } }) {
             {/* زر التشغيل */}
             <button className="px-8 py-3 bg-white text-black text-xl font-bold rounded hover:bg-gray-300 transition-all flex items-center gap-3 mb-8">
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 0 002.3 1.269l9.344-5.89a1.5 0 000-2.538L6.3 2.84z" />
               </svg>
               تشغيل
             </button>
