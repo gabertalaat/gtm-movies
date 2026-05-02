@@ -1,9 +1,10 @@
 import Link from 'next/link';
+import { Metadata } from 'next';
 
 async function getMovieDetails(id: string) {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   console.log('API KEY FROM ENV:', apiKey);
-  
+
   const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=ar&append_to_response=videos,credits`, {
     next: { revalidate: 3600 }
   });
@@ -11,11 +12,51 @@ async function getMovieDetails(id: string) {
   return res.json();
 }
 
+// الكود ده اللي ضيفته عشان الـ SEO - بيشتغل تلقائي لكل فيلم
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const movie = await getMovieDetails(id);
+  const year = movie.release_date?.split('-')[0];
+
+  return {
+    title: `مشاهدة فيلم ${movie.title} ${year} مترجم | GTM MOVIES`,
+    description: `شاهد فيلم ${movie.title} ${year} على موقع gtm movies مترجم اون لاين HD. ${movie.overview?.slice(0, 155)}...`,
+    keywords: [
+      'GTM MOVIES', 'gtm movies', 'Gtm Movies', 'GTM movies',
+      `مشاهدة فيلم ${movie.title}`,
+      `فيلم ${movie.title} مترجم`,
+      `فيلم ${movie.title} اون لاين`,
+      `${movie.title} ${year}`,
+      'جي تي ام موفيز',
+      'افلام اون لاين'
+    ],
+    openGraph: {
+      title: `مشاهدة فيلم ${movie.title} مترجم - GTM MOVIES`,
+      description: movie.overview,
+      images: [
+        {
+          url: `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`,
+          width: 1280,
+          height: 720,
+          alt: movie.title,
+        },
+      ],
+      type: 'video.movie',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `فيلم ${movie.title} - GTM MOVIES`,
+      description: `شاهده الآن على gtm movies`,
+      images: [`https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`],
+    },
+  };
+}
+
 export default async function MoviePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const movie = await getMovieDetails(id);
-  
-  const trailer = movie.videos.results.find((v: any) => 
+
+  const trailer = movie.videos.results.find((v: any) =>
     (v.type === 'Trailer' || v.type === 'Teaser' || v.type === 'Clip' || v.type === 'Featurette') && v.site === 'YouTube'
   );
 
@@ -57,9 +98,9 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
 
           <div className="mt-8">
             <h3 className="text-2xl font-bold mb-4">التريلر</h3>
-            {trailer ? (
-              <a 
-                href={`https://www.youtube.com/watch?v=${trailer.key}`} 
+            {trailer? (
+              <a
+                href={`https://www.youtube.com/watch?v=${trailer.key}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block relative group"
@@ -75,7 +116,6 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
                       <path d="M6.3 2.841A1.5 0 004 4.11V15.89a1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                     </svg>
                   </div>
-                </div>
                 <div className="absolute bottom-4 left-4 bg-black/80 px-3 py-1 rounded text-sm">
                   شاهده على YouTube
                 </div>
