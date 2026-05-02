@@ -12,7 +12,6 @@ async function getMovieDetails(id: string) {
   return res.json();
 }
 
-// الكود ده اللي ضيفته عشان الـ SEO - بيشتغل تلقائي لكل فيلم
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const movie = await getMovieDetails(id);
