@@ -1,93 +1,141 @@
+'use client';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
-async function getMovieDetails(id: string) {
+type Movie = {
+  id: number;
+  title: string;
+  poster_path: string;
+  backdrop_path: string;
+  vote_average: number;
+  release_date: string;
+};
+
+export default function HomePage() {
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [trending, setTrending] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-  console.log('API KEY FROM ENV:', apiKey);
-  
-  const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=ar&append_to_response=videos,credits`, {
-    next: { revalidate: 3600 }
-  });
-  if (!res.ok) throw new Error('Failed to fetch movie');
-  return res.json();
-}
 
-export default async function MoviePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const movie = await getMovieDetails(id);
-  
-  const trailer = movie.videos.results.find((v: any) => 
-    (v.type === 'Trailer' || v.type === 'Teaser' || v.type === 'Clip' || v.type === 'Featurette') && v.site === 'YouTube'
-  );
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        // خلفية البوسترات
+        const moviesRes = await fetch(
+          `https://api.themoviedb.org/3/trending/movie/week?api_key=${apiKey}&language=ar`
+        );
+        const moviesData = await moviesRes.json();
+        setMovies(moviesData.results?.slice(0, 18) || []);
+
+        // الأكثر شهرة
+        const trendingRes = await fetch(
+          `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=ar&region=EG`
+        );
+        const trendingData = await trendingRes.json();
+        setTrending(trendingData.results?.slice(0, 10) || []);
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [apiKey]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-2xl text-gray-400">جاري التحميل...</div>
+      </div>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-gray-900 text-white">
-      <div className="relative h-96">
-        <img
-          src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
-          alt={movie.title}
-          className="w-full h-full object-cover opacity-30"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent" />
-        <div className="absolute bottom-0 left-0 p-8 md:p-12">
-          <Link href="/" className="text-yellow-400 hover:underline mb-4 block">← رجوع للرئيسية</Link>
-          <h1 className="text-4xl md:text-6xl font-bold">{movie.title}</h1>
-          <p className="text-xl text-yellow-400 mt-2">⭐ {movie.vote_average.toFixed(1)} | {movie.release_date?.split('-')[0]}</p>
+    <main className="min-h-screen bg-black text-white">
+      {/* الهيدر */}
+      <header className="absolute top-0 w-full z-40 px-4 md:px-12 py-4 flex justify-between items-center">
+        <h1 className="text-2xl md:text-4xl font-black tracking-[0.05em] text-[#E50914] transform -skew-x-12"
+            style={{ fontFamily: 'Impact, Arial Black, sans-serif' }}>
+          GTM MOVIES
+        </h1>
+        <div className="flex gap-3">
+          <button className="px-4 py-1 border border-gray-500 rounded text-sm hover:border-white">
+            العربية
+          </button>
+          <button className="px-4 py-1 bg-[#E50914] rounded text-sm font-bold hover:bg-red-700">
+            دخول
+          </button>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-7xl mx-auto p-8 md:p-12 grid md:grid-cols-3 gap-8">
-        <img
-          src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-          alt={movie.title}
-          className="rounded-lg w-full"
-        />
-        <div className="md:col-span-2">
-          <h2 className="text-3xl font-bold mb-4">القصة</h2>
-          <p className="text-gray-300 text-lg leading-relaxed mb-8">{movie.overview}</p>
+      {/* الهيرو - خلفية البوسترات */}
+      <section className="relative h-screen flex items-center justify-center text-center overflow-hidden">
+        {/* خلفية البوسترات */}
+        <div className="absolute inset-0 grid grid-cols-3 md:grid-cols-6 gap-1 opacity-40">
+          {movies.map((movie, i) => (
+            <img
+              key={i}
+              src={movie.poster_path
+               ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+                : 'https://via.placeholder.com/300x450'}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          ))}
+        </div>
 
-          <h3 className="text-2xl font-bold mb-4">الممثلين</h3>
-          <div className="flex gap-4 overflow-x-auto pb-4">
-            {movie.credits.cast.slice(0, 6).map((actor: any) => (
-              <Link href={`/person/${actor.id}`} key={actor.id} className="text-center flex-shrink-0 w-24 hover:scale-105 transition-transform">
-                <img src={actor.profile_path? `https://image.tmdb.org/t/p/w185${actor.profile_path}` : 'https://via.placeholder.com/185'} alt={actor.name} className="w-24 h-24 rounded-full object-cover mb-2" />
-                <p className="text-sm hover:text-yellow-400">{actor.name}</p>
-              </Link>
-            ))}
-          </div>
+        {/* طبقة سودا فوق البوسترات */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/60"></div>
 
-          <div className="mt-8">
-            <h3 className="text-2xl font-bold mb-4">التريلر</h3>
-            {trailer ? (
-              <a 
-                href={`https://www.youtube.com/watch?v=${trailer.key}`} 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block relative group"
-              >
+        {/* المحتوى */}
+        <div className="relative z-10 px-4 max-w-3xl">
+          <h2 className="text-4xl md:text-6xl font-black mb-4 leading-tight">
+            أفلام ومسلسلات وبرامج
+            <br />
+            لا حصر لها والمزيد
+          </h2>
+          <p className="text-lg md:text-xl mb-8 text-gray-200">
+            شاهد في أي وقت. مجاني 100%
+          </p>
+          <Link href="/browse">
+            <button className="px-8 py-4 bg-[#E50914] text-xl font-bold rounded hover:bg-red-700 transition-all flex items-center gap-2 mx-auto">
+              ابدأ التصفح
+              <span className="text-2xl">‹</span>
+            </button>
+          </Link>
+        </div>
+
+        {/* خط منحني تحت */}
+        <div className="absolute bottom-0 w-full h-20">
+          <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
+          <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-transparent via-[#E50914] to-transparent"></div>
+        </div>
+      </section>
+
+      {/* الأكثر شهرة الآن */}
+      <section className="bg-black px-4 md:px-12 pb-12 -mt-1">
+        <h3 className="text-2xl font-bold mb-6">الأكثر شهرة الآن</h3>
+        <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
+          {trending.map((movie, index) => (
+            <Link href={`/movie/${movie.id}`} key={movie.id} className="flex-shrink-0">
+              <div className="relative group">
+                <span className="absolute -left-8 top-1/2 -translate-y-1/2 text-8xl font-black text-gray-800 group-hover:text-gray-700 z-0"
+                      style={{ WebkitTextStroke: '2px #333' }}>
+                  {index + 1}
+                </span>
                 <img
-                  src={`https://img.youtube.com/vi/${trailer.key}/maxresdefault.jpg`}
-                  alt="شاهد التريلر"
-                  className="w-full aspect-video rounded-lg object-cover"
+                  src={movie.poster_path
+                   ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+                    : 'https://via.placeholder.com/300x450'}
+                  alt={movie.title}
+                  className="w-32 md:w-44 rounded relative z-10 hover:scale-105 transition-transform"
                 />
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center">
-                  <div className="bg-red-600 rounded-full p-5 group-hover:scale-110 transition-transform">
-                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M6.3 2.841A1.5 0 004 4.11V15.89a1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="absolute bottom-4 left-4 bg-black/80 px-3 py-1 rounded text-sm">
-                  شاهده على YouTube
-                </div>
-              </a>
-            ) : (
-              <div className="bg-gray-800 rounded-lg p-8 text-center">
-                <p className="text-gray-400 text-lg">لا توجد فيديوهات متاحة الآن</p>
               </div>
-            )}
-          </div>
+            </Link>
+          ))}
         </div>
-      </div>
+      </section>
     </main>
   );
 }
